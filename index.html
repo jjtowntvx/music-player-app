@@ -1,26 +1,583 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Music Player</title>
-<style>
-:root{--bg:#0f172a;--panel:#111827;--panel2:#1f2937;--primary:#8b5cf6;--text:#e5e7eb;--muted:#94a3b8;--success:#34d399}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,var(--bg),#1e293b);color:var(--text);min-height:100vh;padding:24px;display:grid;place-items:center}.app{width:min(1200px,100%);background:#111827e8;border:1px solid #ffffff14;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px #0008}.topbar{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;background:#0f172ae8;border-bottom:1px solid #ffffff14}.title{font-size:1.4rem;font-weight:700}.upload-wrap,.controls,.status{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.btn,.file-btn{border:0;border-radius:10px;background:var(--primary);color:white;padding:10px 16px;font-weight:600;cursor:pointer}.btn.secondary,.control-btn{background:var(--panel2);color:var(--text)}.btn:hover,.file-btn:hover,.control-btn:hover{filter:brightness(1.15)}.layout{display:grid;grid-template-columns:1.4fr .8fr;min-height:700px}.main-panel{border-right:1px solid #ffffff14;padding:20px}.player-card,.queue-box,.playlist-box,.playlist-detail{background:#1f2937a3;border-radius:18px;padding:18px;border:1px solid #ffffff0f}.player-card{padding:22px;margin-bottom:18px}.cover{width:min(260px,100%);aspect-ratio:1;margin:0 auto 18px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,#312e81,var(--primary));font-size:3rem}.song-title{text-align:center;font-size:clamp(1.3rem,2vw,2rem);font-weight:700}.song-sub{text-align:center;color:var(--muted);margin:6px 0 18px;min-height:22px}.time-row,.section-header,.playlist-detail-header{display:flex;justify-content:space-between;align-items:center}.time-row{color:var(--muted);font-size:.9rem;margin-bottom:8px}input[type=range]{width:100%;accent-color:var(--primary)}.controls{justify-content:center;margin-top:22px}.control-btn{width:52px;height:52px;border:0;border-radius:50%;font-size:1.2rem;cursor:pointer}.control-btn.primary{width:62px;height:62px;background:var(--primary);font-size:1.35rem}.control-btn.toggle-on{background:var(--success);color:#052e1b}.status{justify-content:center;margin-top:15px}.status span{border-radius:999px;padding:5px 10px;background:#0f172a;color:var(--muted);font-size:.8rem}.status span.on{background:#34d3992e;color:var(--success)}.section-header h2{margin:0;font-size:1.2rem}.song-list,.playlist-list{list-style:none;margin:14px 0 0;padding:0}.song-list{max-height:360px;overflow:auto}.song-item,.playlist-item,.playlist-song{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;background:#0f172a80;border:1px solid transparent;border-radius:10px;margin-bottom:8px}.song-item{cursor:pointer}.song-item.active,.playlist-item.active{background:#8b5cf62e;border-color:#8b5cf6b3}.song-meta,.name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.song-actions,.small-actions{display:flex;gap:6px}.mini-btn{border:0;background:#ffffff0f;color:var(--text);border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem}.side-panel{padding:20px}.playlist-box{margin-bottom:18px}.playlist-form{display:flex;gap:8px;margin:10px 0}.playlist-form input{flex:1;background:#0f172acc;color:var(--text);border:1px solid #ffffff14;border-radius:10px;padding:10px 12px}.playlist-name{font-weight:600}.playlist-count,.muted{color:var(--muted);font-size:.85rem}.playlist-songs{max-height:280px;overflow:auto}.playlist-song .name{flex:1}.save-note{text-align:center;color:var(--muted);font-size:.78rem;margin-top:12px}@media(max-width:900px){.layout{grid-template-columns:1fr}.main-panel{border-right:0;border-bottom:1px solid #ffffff14}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Music Player</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #111827;
+            --panel2: #1f2937;
+            --primary: #8b5cf6;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --success: #34d399
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text)
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh
+        }
+
+        .topbar {
+            background: var(--panel);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--panel2)
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary)
+        }
+
+        .upload-wrap {
+            display: flex;
+            gap: 10px
+        }
+
+        .file-btn {
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background .3s
+        }
+
+        .file-btn:hover {
+            background: #7c3aed
+        }
+
+        #fileInput {
+            display: none
+        }
+
+        .tabs-container {
+            background: var(--panel2);
+            padding: 0;
+            display: flex;
+            border-bottom: 2px solid var(--muted)
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: transparent;
+            color: var(--muted);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all .3s;
+            border-bottom: 3px solid transparent
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--panel)
+        }
+
+        .tab-btn:hover {
+            color: var(--text)
+        }
+
+        .content {
+            display: flex;
+            flex: 1;
+            overflow: hidden
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto
+        }
+
+        .tab-content.active {
+            display: flex
+        }
+
+        .player-section {
+            display: flex;
+            gap: 20px;
+            padding: 20px
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px
+        }
+
+        .right-panel {
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px
+        }
+
+        .card {
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid var(--panel2)
+        }
+
+        .card-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 14px;
+            text-transform: uppercase
+        }
+
+        .player-display {
+            text-align: center
+        }
+
+        #songTitle {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--primary)
+        }
+
+        #artistName {
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--panel2);
+            border-radius: 3px;
+            margin: 10px 0;
+            cursor: pointer
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background .3s
+        }
+
+        button:hover {
+            background: #7c3aed
+        }
+
+        button:disabled {
+            background: var(--muted);
+            cursor: not-allowed
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 10px
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 12px
+        }
+
+        .mode-btn.active {
+            background: var(--success)
+        }
+
+        .song-item {
+            padding: 10px;
+            background: var(--panel2);
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all .3s
+        }
+
+        .song-item:hover {
+            background: #374151
+        }
+
+        .song-item.active {
+            background: var(--primary);
+            color: white
+        }
+
+        .song-meta {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .song-actions {
+            display: flex;
+            gap: 5px
+        }
+
+        .icon-btn {
+            background: transparent;
+            color: var(--text);
+            padding: 5px 10px;
+            font-size: 12px;
+            border: 1px solid var(--muted);
+            cursor: pointer
+        }
+
+        .icon-btn:hover {
+            color: var(--primary)
+        }
+
+        .playlist-item {
+            padding: 12px;
+            background: var(--panel2);
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all .3s
+        }
+
+        .playlist-item:hover {
+            background: #374151
+        }
+
+        .playlist-item.active {
+            background: var(--primary);
+            color: white
+        }
+
+        .playlist-name {
+            font-weight: bold;
+            margin-bottom: 4px
+        }
+
+        .playlist-count {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            background: var(--panel2);
+            border: 1px solid var(--muted);
+            border-radius: 4px;
+            color: var(--text)
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary)
+        }
+
+        #playlistSongs {
+            list-style: none;
+            padding: 0;
+            margin: 0
+        }
+
+        .effects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px
+        }
+
+        .effect-control {
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--panel2)
+        }
+
+        .effect-label {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase
+        }
+
+        .effect-value {
+            color: var(--text);
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            font-family: monospace
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--panel2);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: background .3s
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #7c3aed
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+            transition: background .3s
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            background: #7c3aed
+        }
+
+        .effect-description {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+            text-align: center
+        }
+
+        .reset-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 8px;
+            font-size: 12px
+        }
+
+        audio {
+            display: none
+        }
+    </style>
 </head>
-<body><div class="app"><div class="topbar"><div class="title">Music Player</div><div class="upload-wrap"><label class="file-btn" for="fileInput">Upload Music</label><input id="fileInput" type="file" accept="audio/*" multiple hidden></div></div><div class="layout"><main class="main-panel"><div class="player-card"><div class="cover">♫</div><div class="song-title" id="songTitle">No track loaded</div><div class="song-sub" id="songArtist">Upload music to begin</div><div><div class="time-row"><span id="currentTime">0:00</span><span id="duration">0:00</span></div><input id="seekBar" type="range" min="0" max="100" value="0"></div><div class="controls"><button class="control-btn" id="prevBtn" title="Previous">⏮</button><button class="control-btn primary" id="playBtn" title="Play/Pause">▶</button><button class="control-btn" id="nextBtn" title="Next">⏭</button><button class="control-btn" id="shuffleBtn" title="Shuffle">🔀</button><button class="control-btn" id="repeatTrackBtn" title="Repeat current song">🔁</button><button class="control-btn" id="repeatAllBtn" title="Repeat all songs">🔂</button></div><div class="status"><span id="shuffleStatus">Shuffle: Off</span><span id="repeatTrackStatus">Repeat song: Off</span><span id="repeatAllStatus">Repeat all: Off</span></div><div class="save-note">Uploaded music is saved in this browser on this Chromebook.</div></div><div class="queue-box"><div class="section-header"><h2>Queue</h2><button class="btn secondary" id="clearQueueBtn">Clear</button></div><ul class="song-list" id="songList"></ul></div></main><aside class="side-panel"><div class="playlist-box"><div class="section-header"><h2>Playlists</h2></div><div class="playlist-form"><input id="playlistNameInput" placeholder="New playlist name"><button class="btn" id="createPlaylistBtn">Create</button></div><div class="playlist-list" id="playlistList"></div></div><div class="playlist-detail"><div class="playlist-detail-header"><h3 id="selectedPlaylistTitle">No playlist selected</h3><button class="btn secondary" id="sortPlaylistBtn">Sort A-Z</button></div><div class="playlist-songs" id="playlistSongs"></div></div></aside></div></div><audio id="audioPlayer"></audio>
-<script>
-const $=id=>document.getElementById(id),audio=$("audioPlayer"),fileInput=$("fileInput"),songList=$("songList"),playlistList=$("playlistList"),playlistSongs=$("playlistSongs"),title=$("songTitle"),artist=$("songArtist"),play=$("playBtn"),seek=$("seekBar"),now=$("currentTime"),duration=$("duration");let songs=[],current=-1,shuffle=false,repeatTrack=false,repeatAll=false,playlists=[],selected=null;const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])),uid=p=>p+'-'+Date.now()+'-'+Math.random().toString(16).slice(2),fmt=s=>Number.isFinite(s)?`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`:'0:00';
-let dbPromise=new Promise((resolve,reject)=>{let r=indexedDB.open('music-player-storage',1);r.onupgradeneeded=()=>r.result.createObjectStore('songs',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)});
-async function saveSongs(){let db=await dbPromise,tx=db.transaction('songs','readwrite'),store=tx.objectStore('songs');store.clear();songs.forEach(s=>store.put({id:s.id,name:s.name,blob:s.blob}));}
-async function restoreSongs(){try{let db=await dbPromise,tx=db.transaction('songs','readonly'),req=tx.objectStore('songs').getAll();req.onsuccess=()=>{songs=req.result.map(s=>({...s,src:URL.createObjectURL(s.blob)}));renderSongs();}}catch(e){console.warn('Saved music could not be restored',e)}}
-function savePlaylists(){localStorage.setItem('music-player-playlists',JSON.stringify(playlists))}function updateModes(){[["shuffleBtn",shuffle,"shuffleStatus","Shuffle"],["repeatTrackBtn",repeatTrack,"repeatTrackStatus","Repeat song"],["repeatAllBtn",repeatAll,"repeatAllStatus","Repeat all"]].forEach(([b,on,s,l])=>{$(b).classList.toggle('toggle-on',on);$(s).classList.toggle('on',on);$(s).textContent=l+': '+(on?'On':'Off')})}
-function renderSongs(){songList.innerHTML=songs.length?songs.map((s,i)=>`<li class="song-item ${i===current?'active':''}" data-i="${i}"><span class="song-meta">${esc(s.name)}</span><span class="song-actions"><button class="mini-btn" data-action="play">Play</button><button class="mini-btn" data-action="add">Add</button></span></li>`).join(''):'<li class="muted">No music uploaded yet.</li>'}
-function renderPlaylists(){playlistList.innerHTML=playlists.length?playlists.map(p=>`<div class="playlist-item ${p.id===selected?'active':''}" data-p="${p.id}"><div><div class="playlist-name">${esc(p.name)}</div><div class="playlist-count">${p.songs.length} songs</div></div><button class="mini-btn" data-delete>Delete</button></div>`).join(''):'<div class="muted">No playlists yet.</div>';renderDetail()}
-function renderDetail(){let p=playlists.find(x=>x.id===selected);$("selectedPlaylistTitle").textContent=p?p.name:'No playlist selected';playlistSongs.innerHTML=p&&p.songs.length?p.songs.map((sid,i)=>{let s=songs.find(x=>x.id===sid);return s?`<div class="playlist-song" data-sid="${sid}"><span class="name">${esc(s.name)}</span><span class="small-actions"><button class="mini-btn" data-play>Play</button><button class="mini-btn" data-move="-1">↑</button><button class="mini-btn" data-move="1">↓</button><button class="mini-btn" data-remove>Remove</button></span></div>`:''}).join(''):(p?'<div class="muted">This playlist is empty.</div>':'<div class="muted">Select a playlist to view songs.</div>')}
-function playSong(i){if(!songs[i])return;current=i;audio.src=songs[i].src;audio.play().catch(()=>{});title.textContent=songs[i].name;artist.textContent='Now playing';renderSongs()}
-function next(){if(!songs.length)return;if(repeatTrack){audio.currentTime=0;audio.play();return}if(songs.length===1){if(repeatAll)playSong(0);return}if(!repeatAll&&current===songs.length-1){audio.pause();return}let i=shuffle?Math.floor(Math.random()*songs.length):(current+1)%songs.length;if(shuffle&&i===current)i=(i+1)%songs.length;playSong(i)}
-fileInput.onchange=async e=>{let added=[...e.target.files].filter(f=>f.type.startsWith('audio/')).map(f=>({id:uid('song'),name:f.name,blob:f,src:URL.createObjectURL(f)}));if(!added.length)return alert('No valid audio files were selected.');songs.push(...added);await saveSongs();if(current<0)playSong(0);renderSongs();e.target.value=''};
-play.onclick=()=>{if(!songs.length)return;if(current<0)playSong(0);else audio.paused?audio.play():audio.pause()};$("nextBtn").onclick=next;$("prevBtn").onclick=()=>{if(songs.length)playSong((current-1+songs.length)%songs.length)};$("shuffleBtn").onclick=()=>{shuffle=!shuffle;updateModes()};$("repeatTrackBtn").onclick=()=>{repeatTrack=!repeatTrack;if(repeatTrack)repeatAll=false;updateModes()};$("repeatAllBtn").onclick=()=>{repeatAll=!repeatAll;if(repeatAll)repeatTrack=false;updateModes()};audio.onplay=()=>play.textContent='❚❚';audio.onpause=()=>play.textContent='▶';audio.ontimeupdate=()=>{seek.value=audio.duration?(audio.currentTime/audio.duration)*100:0;now.textContent=fmt(audio.currentTime);duration.textContent=fmt(audio.duration)};audio.onloadedmetadata=()=>duration.textContent=fmt(audio.duration);audio.onended=next;seek.oninput=()=>{if(audio.duration)audio.currentTime=seek.value/100*audio.duration};
-$("createPlaylistBtn").onclick=()=>{let name=$("playlistNameInput").value.trim();if(!name)return;if(playlists.some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert('A playlist with that name already exists.');let p={id:uid('playlist'),name,songs:[]};playlists.push(p);selected=p.id;$("playlistNameInput").value='';savePlaylists();renderPlaylists()};$("playlistNameInput").onkeydown=e=>{if(e.key==='Enter')$("createPlaylistBtn").click()};playlistList.onclick=e=>{let row=e.target.closest('[data-p]');if(!row)return;let p=playlists.find(x=>x.id===row.dataset.p);if(e.target.dataset.delete){playlists=playlists.filter(x=>x!==p);if(selected===p.id)selected=null;savePlaylists()}else selected=p.id;renderPlaylists()};
-songList.onclick=e=>{let row=e.target.closest('[data-i]');if(!row)return;let s=songs[+row.dataset.i];if(e.target.dataset.action==='add'){let p=playlists.find(x=>x.id===selected);if(!p)return alert('Choose a playlist first.');if(!p.songs.includes(s.id))p.songs.push(s.id);savePlaylists();renderPlaylists()}else playSong(+row.dataset.i)};playlistSongs.onclick=e=>{let row=e.target.closest('.playlist-song'),p=playlists.find(x=>x.id===selected);if(!row||!p)return;let sid=row.dataset.sid,i=p.songs.indexOf(sid);if(e.target.dataset.play){let n=songs.findIndex(s=>s.id===sid);if(n>=0)playSong(n)}else if(e.target.dataset.remove)p.songs.splice(i,1);else if(e.target.dataset.move){let n=i+ +e.target.dataset.move;if(n>=0&&n<p.songs.length)[p.songs[i],p.songs[n]]=[p.songs[n],p.songs[i]]}savePlaylists();renderPlaylists()};$("sortPlaylistBtn").onclick=()=>{let p=playlists.find(x=>x.id===selected);if(p)p.songs.sort((a,b)=>(songs.find(s=>s.id===a)?.name||'').localeCompare(songs.find(s=>s.id===b)?.name||''));savePlaylists();renderDetail()};$("clearQueueBtn").onclick=async()=>{songs.forEach(s=>URL.revokeObjectURL(s.src));songs=[];current=-1;audio.pause();audio.src='';title.textContent='No track loaded';artist.textContent='Upload music to begin';now.textContent=duration.textContent='0:00';let db=await dbPromise,tx=db.transaction('songs','readwrite');tx.objectStore('songs').clear();renderSongs()};
-try{playlists=JSON.parse(localStorage.getItem('music-player-playlists')||'[]')}catch(e){}renderSongs();renderPlaylists();updateModes();restoreSongs();
-</script></body></html>
+
+<body>
+    <div class="app">
+        <div class="topbar">
+            <div class="title">Music Player</div>
+            <div class="upload-wrap">
+                <label class="file-btn" for="fileInput">Upload Music</label>
+                <input id="fileInput" type="file" accept="audio/*" multiple>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="player">Player</button>
+            <button class="tab-btn" data-tab="effects">Effects</button>
+        </div>
+
+        <div class="content">
+            <!-- Player Tab -->
+            <div id="player" class="tab-content active">
+                <div class="player-section">
+                    <div class="left-panel">
+                        <div class="card player-display">
+                            <div class="card-title">Now Playing</div>
+                            <audio id="audioPlayer"></audio>
+                            <div id="songTitle">No song selected</div>
+                            <div id="artistName">Ready to play</div>
+                            <div class="progress-bar" id="progressBar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="time-display">
+                                <span id="currentTime">0:00</span>
+                                <span id="duration">0:00</span>
+                            </div>
+                            <div class="controls">
+                                <button id="prevBtn">⏮ Prev</button>
+                                <button id="playBtn">▶ Play</button>
+                                <button id="nextBtn">Next ⏭</button>
+                            </div>
+                            <div class="mode-buttons">
+                                <button class="mode-btn" id="shuffleBtn">🔀 Shuffle</button>
+                                <button class="mode-btn" id="repeatTrackBtn">🔂 Track</button>
+                                <button class="mode-btn" id="repeatAllBtn">🔁 All</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right-panel">
+                        <div class="card">
+                            <div class="card-title">Songs</div>
+                            <ul id="songList" style="list-style: none; padding: 0; margin: 0;"></ul>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Playlists</div>
+                            <div class="input-group">
+                                <input type="text" id="playlistNameInput" placeholder="New playlist...">
+                                <button id="createPlaylistBtn" style="padding: 8px 12px; width: auto;">+</button>
+                            </div>
+                            <div id="playlistList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Effects Tab -->
+            <div id="effects" class="tab-content">
+                <div class="effects-grid">
+                    <div class="effect-control">
+                        <div class="effect-label">Speed</div>
+                        <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+                        <div class="effect-value" id="speedValue">1.0x</div>
+                        <div class="effect-description">Adjusts playback speed and pitch</div>
+                        <button class="reset-btn" onclick="document.getElementById('speedSlider').value = 1; updateSpeed()">Reset</button>
+                    </div>
+
+                    <div class="effect-control">
+                        <div class="effect-label">Pitch Shift</div>
+                        <input type="range" id="pitchSlider" min="-12" max="12" step="1" value="0">
+                        <div class="effect-value" id="pitchValue">0 semitones</div>
+                        <div class="effect-description">Adjust pitch by semitones</div>
+                        <button class="reset-btn" onclick="document.getElementById('pitchSlider').value = 0; updatePitch()">Reset</button>
+                    </div>
+
+                    <div class="effect-control">
+                        <div class="effect-label">Reverb</div>
+                        <input type="range" id="reverbSlider" min="0" max="100" step="1" value="0">
+                        <div class="effect-value" id="reverbValue">0%</div>
+                        <div class="effect-description">Room reverb effect</div>
+                        <button class="reset-btn" onclick="document.getElementById('reverbSlider').value = 0; updateReverb()">Reset</button>
+                    </div>
+
+                    <div class="effect-control">
+                        <div class="effect-label">Bass Boost</div>
+                        <input type="range" id="bassSlider" min="0" max="100" step="1" value="0">
+                        <div class="effect-value" id="bassValue">0%</div>
+                        <div class="effect-description">Enhance low frequencies</div>
+                        <button class="reset-btn" onclick="document.getElementById('bassSlider').value = 0; updateBass()">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detail panel for playlists -->
+            <div class="right-panel" style="display: none; width: 280px;" id="detailPanel">
+                <div class="card">
+                    <div class="card-title" id="selectedPlaylistTitle">Playlist</div>
+                    <ul id="playlistSongs"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Web Audio API setup for effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const $=id=>document.getElementById(id),audio=$("audioPlayer"),fileInput=$("fileInput"),songList=$("songList"),playlistList=$("playlistList"),playlistSongs=$("playlistSongs"),title=$("songTitle"),artist=$("artistName"),play=$("playBtn"),progressBar=$("progressBar"),progressFill=$("progressFill"),currentTimeEl=$("currentTime"),durationEl=$("duration");let songs=[],playlists=[],current=-1,selected=null,shuffle=!1,repeatTrack=!1,repeatAll=!1;const uid=()=>""+Math.random();let dbPromise=new Promise((resolve,reject)=>{let r=indexedDB.open('music-player-storage',1);r.onupgradeneeded=()=>r.result.createObjectStore('songs',{keyPath:'id'});r.onsuccess=()=>resolve(r.result)});async function saveSongs(){let db=await dbPromise,tx=db.transaction('songs','readwrite'),store=tx.objectStore('songs');store.clear();songs.forEach(s=>store.put({id:s.id,name:s.name,blob:s.blob}))}async function restoreSongs(){try{let db=await dbPromise,tx=db.transaction('songs','readonly'),req=tx.objectStore('songs').getAll();req.onsuccess=()=>{songs=req.result.map(s=>({...s,src:URL.createObjectURL(s.blob)}));renderSongs()}}catch(e){}}function savePlaylists(){localStorage.setItem('music-player-playlists',JSON.stringify(playlists))}function updateModes(){[["shuffleBtn",shuffle,"shuffleStatus","Shuffle"],["repeatTrackBtn",repeatTrack,"repeatTrackStatus","Repeat Track"],["repeatAllBtn",repeatAll,"repeatAllStatus","Repeat All"]].forEach(([btn,mode,status,label])=>{$(btn).classList.toggle("active",mode)})}function renderSongs(){songList.innerHTML=songs.length?songs.map((s,i)=>`<li class="song-item ${i===current?'active':''}" data-i="${i}"><span class="song-meta">${esc(s.name)}</span><span class="song-actions"><button class="icon-btn" data-action="add">+</button><button class="icon-btn" data-action="del">✕</button></span></li>`).join(''):' <li style="color: var(--muted)">No songs uploaded</li>'}function renderPlaylists(){playlistList.innerHTML=playlists.length?playlists.map(p=>`<div class="playlist-item ${p.id===selected?'active':''}" data-p="${p.id}"><div><div class="playlist-name">${esc(p.name)}</div><div class="playlist-count">${p.songs.length} songs</div></div></div>`).join(''):'<div style="color: var(--muted); font-size: 12px;">No playlists yet</div>'}function renderDetail(){let p=playlists.find(x=>x.id===selected);$("selectedPlaylistTitle").textContent=p?p.name:'No playlist selected';playlistSongs.innerHTML=p&&p.songs.length?p.songs.map((sid,i)=>{let s=songs.find(x=>x.id===sid);return `<li class="song-item" data-si="${i}"><span class="song-meta">${esc(s?s.name:'Unknown')}</span><span class="song-actions"><button class="icon-btn" data-action="play">▶</button><button class="icon-btn" data-action="remove">✕</button></span></li>`}).join(''):'<li style="color: var(--muted); font-size: 12px;">Empty playlist</li>'}function playSong(i){if(!songs[i])return;current=i;audio.src=songs[i].src;audio.play().catch(()=>{});title.textContent=songs[i].name;artist.textContent='Now playing';renderSongs()}function next(){if(!songs.length)return;if(repeatTrack){audio.currentTime=0;audio.play();return}if(songs.length===1){if(repeatAll)playSong(0);return}if(!repeatAll&&current===songs.length-1){audio.pause();return}let n=shuffle?Math.floor(Math.random()*songs.length):(current+1)%songs.length;playSong(n)}function esc(s){let d=document.createElement('div');d.textContent=s;return d.innerHTML}fileInput.onchange=async e=>{let added=[...e.target.files].filter(f=>f.type.startsWith('audio/')).map(f=>({id:uid(),name:f.name,blob:f,src:URL.createObjectURL(f)}));if(!added.length)return alert('No audio files found');songs=[...songs,...added];saveSongs();renderSongs()};play.onclick=()=>{if(!songs.length)return;if(current<0)playSong(0);else audio.paused?audio.play():audio.pause()};$("nextBtn").onclick=next;$("prevBtn").onclick=()=>{if(songs.length)playSong((current-1+songs.length)%songs.length)};audio.onended=next;audio.ontimeupdate=()=>{let p=audio.duration?audio.currentTime/audio.duration*100:0;progressFill.style.width=p+'%';let fmt=t=>{let m=Math.floor(t/60),s=Math.floor(t%60);return m+':'+(s<10?'0':'')+s};currentTimeEl.textContent=fmt(audio.currentTime);durationEl.textContent=fmt(audio.duration)};progressBar.onclick=e=>{if(!audio.duration)return;audio.currentTime=(e.offsetX/progressBar.offsetWidth)*audio.duration};$("shuffleBtn").onclick=()=>{shuffle=!shuffle;updateModes()};$("repeatTrackBtn").onclick=()=>{repeatTrack=!repeatTrack;repeatAll=!1;updateModes()};$("repeatAllBtn").onclick=()=>{repeatAll=!repeatAll;repeatTrack=!1;updateModes()};$("createPlaylistBtn").onclick=()=>{let name=$("playlistNameInput").value.trim();if(!name)return;if(playlists.some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert('A playlist with that name exists');playlists.push({id:uid(),name:name,songs:[]});savePlaylists();renderPlaylists();$("playlistNameInput").value=''};songList.onclick=e=>{let row=e.target.closest('[data-i]');if(!row)return;let s=songs[+row.dataset.i];if(e.target.dataset.action==='add'){let p=playlists.find(x=>x.id===selected);if(!p)return alert('Select a playlist first');if(p.songs.includes(s.id))return alert('Song already in playlist');p.songs.push(s.id);savePlaylists();renderDetail()}else if(e.target.dataset.action==='del'){songs.splice(+row.dataset.i,1);current=-1;saveSongs();renderSongs()}else playSong(+row.dataset.i)};playlistList.onclick=e=>{let row=e.target.closest('[data-p]');if(!row)return;selected=row.dataset.p;renderPlaylists();renderDetail()};playlistSongs.onclick=e=>{let row=e.target.closest('[data-si]');if(!row)return;let p=playlists.find(x=>x.id===selected);if(!p)return;if(e.target.dataset.action==='play'){let s=songs.find(x=>x.id===p.songs[+row.dataset.si]);playSong(songs.indexOf(s))}else if(e.target.dataset.action==='remove'){p.songs.splice(+row.dataset.si,1);savePlaylists();renderDetail()}};try{playlists=JSON.parse(localStorage.getItem('music-player-playlists')||'[]')}catch(e){}renderSongs();renderPlaylists();updateModes();restoreSongs();
+
+        // Effects functions
+        function updateSpeed() {
+            const value = parseFloat($("speedSlider").value);
+            audio.playbackRate = value;
+            $("speedValue").textContent = value.toFixed(1) + 'x';
+        }
+
+        function updatePitch() {
+            const semitones = parseFloat($("pitchSlider").value);
+            $("pitchValue").textContent = semitones + ' semitones';
+            // Note: HTML5 audio doesn't natively support pitch shifting without Web Audio API
+            // This is a placeholder for basic pitch indication
+            // For full pitch shifting, connect to Web Audio API in future updates
+        }
+
+        function updateReverb() {
+            const value = parseFloat($("reverbSlider").value);
+            $("reverbValue").textContent = Math.round(value) + '%';
+            // Reverb effect placeholder
+        }
+
+        function updateBass() {
+            const value = parseFloat($("bassSlider").value);
+            $("bassValue").textContent = Math.round(value) + '%';
+            // Bass boost effect placeholder
+        }
+
+        // Event listeners for effect controls
+        $("speedSlider").addEventListener('input', updateSpeed);
+        $("pitchSlider").addEventListener('input', updatePitch);
+        $("reverbSlider").addEventListener('input', updateReverb);
+        $("bassSlider").addEventListener('input', updateBass);
+    </script>
+</body>
+
+</html>
